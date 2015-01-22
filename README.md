@@ -1,4 +1,4 @@
-![Hoist](https://raw.github.com/flovan/hoist/demo/img/hoist.gif)
+![Hoist](https://raw.github.com/flovan/hoist/master/demo/img/hoist.gif)
 
 #Hoist.js v0.0.1
 
