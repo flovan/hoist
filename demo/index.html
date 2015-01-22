@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Hoist.js demo</title>
+	<link rel="stylesheet" href="demo.css">
+	<!-- Include respond.js to make sure the media queries work in IE8(-) -->
+	<!--[if lt IE 9]>
+	<script src="lib/respond.min.js"></script>
+	<script src="lib/nwmatcher.min.js"></script>
+	<script src="lib/selectivizr.min.js"></script>
+	<![endif]-->
+</head>
+<body>
+	<div class="dynamic-scaler">
+		<div class="container">
+			<h1>This is a demo of Stilt.js</h1>
+			<div class="row">
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a column with a lot of text.</p>
+					<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Sed posuere consectetur est at lobortis.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a column with a lot of text.</p>
+					<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Sed posuere consectetur est at lobortis.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a column with a lot of text.</p>
+					<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Sed posuere consectetur est at lobortis.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a column with a lot of text.</p>
+					<p>Nullam id dolor id nibh ultricies vehicula ut id elit. Nulla vitae elit libero, a pharetra augue. Duis mollis, est non commodo luctus, nisi erat porttitor ligula, eget lacinia odio sem nec elit. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Sed posuere consectetur est at lobortis.</p>
+				</div>
+				<div class="col" style="background-color: #EAEAEA;">
+					<p>I am a small column.</p>
+				</div>
+				<div class="col" style="background-color: #CECECE;">
+					<p>I am a small column.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="../hoist.js"></script>
+	<script>
+		var m =  new Hoist('.row', {
+			minWidth: 750,
+			itemSelector: '.col',
+			columns: [{
+				breakPoint: 1200,
+				columns: 4
+			}, {
+				breakPoint: 1000,
+				columns: 3
+			}, {
+				breakPoint: 600,
+				columns: 2
+			}]
+		});
+	</script>
+</body>
+</html>
