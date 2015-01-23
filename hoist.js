@@ -1,9 +1,9 @@
-//  Hoist.js 0.0.1
+//  Hoist.js 0.1.0
 //  https://github.com/flovan/hoist
 //  (c) 2015-whateverthecurrentyearis Florian Vanthuyne
 //  Hoist may be freely distributed under the MIT license.
 
-(function(window){
+(function(window, document){
 
 	var Hoist = function (container, opts) {
 		if (typeof container !== 'string') {
@@ -47,7 +47,7 @@
 				t;
 
 			// Identify DOM elements
-			this.container = document.querySelectorAll(this.containerSelector);
+			this.container = document.querySelectorAll(this.containerSelector)[0];
 			this.items = document.querySelectorAll(this.settings.itemSelector);
 
 			if (!this.items.length) {
@@ -67,7 +67,7 @@
 
 			// Trigger another offset resize for the webfonts
 			t = setTimeout(function () {
-				self.win.resize();
+				self.windowResizeHandler.apply(self);
 				clearTimeout(t);
 			}, self.settings.repeatResize);
 
@@ -76,22 +76,19 @@
 		},
 
 		windowResizeHandler: function (e) {
-			var iw = Math.max(
-					document.body.offsetWidth || 0,
-					document.documentElement.offsetWidth || 0,
-					window.innerWidth || 0
-				),
+			var ww = this.getWindowWidth(),
 				max = this.items.length,
 				c = 0,
 				currItem = null,
 				numCols = this.multipleBreaks ? this.getNumCols() : this.settings.columns,
 				currColIndex = 0,
+				smallestColIndex = 0,
 				leftOffset = 0;
 
 			this.container.style.position = 'relative';
 
 			// Attach a guard for smaller screens
-			if (iw < this.settings.minWidth) {
+			if (ww < this.settings.minWidth) {
 				this.resetItems();
 				return;
 			}
@@ -108,48 +105,76 @@
 				// Calculate the left offset
 				leftOffset = 0;
 				if (currColIndex > 0) {
-					//leftOffset = this.columns[currColIndex].w;
-					leftOffset += _.reduce(_.pluck(this.columns, 'w').slice(0, currColIndex), function (memo, num) { return memo + num; }, 0);
+					var colWidths = [],
+						totalWidth = 0;
+
+					for (var i = 0, len = this.columns.length; i < len; i++) {
+						colWidths.push(this.columns[i].w);
+					}
+					colWidths = colWidths.slice(0, currColIndex);
+
+					for (var i = 0, len = colWidths.length; i < len; i++) {
+						leftOffset += colWidths[i];
+					}
 				}
 
 				// Grab the next item
-				currItem = $(this.items[c]);
+				currItem = this.items[c];
 
 				// Set item styles
-				currItem.css({
-					position: 'absolute',
-					left: leftOffset + 'px',
-					top: this.columns[currColIndex].h + 'px'
-				});
+				currItem.style.position = 'absolute';
+				currItem.style.left = leftOffset + 'px';
+				currItem.style.top = this.columns[currColIndex].h + 'px';
 
 				// Increase column height counter
-				this.columns[currColIndex].h += Utils.outerHeight(currItem[0]);
-				this.columns[currColIndex].w = Utils.outerWidth(currItem[0]);
+				this.columns[currColIndex].h += outerHeight(currItem);
+				this.columns[currColIndex].w = outerWidth(currItem);
 
 				// Get the next column index
-				if (typeof this.columns[currColIndex + 1] === 'undefined') {
-					currColIndex = 0;
-				} else if (this.columns[currColIndex].h > this.columns[currColIndex + 1].h) {
-					currColIndex++;
-				}
+				currColIndex = this.getSmallestCol();
 
 				// Increase loop counter
 				c++;
 			}
 
 			// Sort column heights
-			this.columns = _.sortBy(this.columns, 'h');
+			this.columns.sort(function (left, right) {
+				return left.h > right.h ? 1 : -1;
+			});
 
 			// Make container fit the largest column
-			this.container.css('height', this.columns.pop().h + 'px');
+			this.container.style.height = this.columns.pop().h + 'px';
 		},
 
 		getNumCols: function () {
-			var currentBreak = _.sortBy(_.filter(this.settings.columns.slice(0), function (bp) {
-				return bp.breakPoint < window.innerWidth;
-			}), 'breakPoint');
+			var colSetting = null,
+				ww = this.getWindowWidth();
+			for ( var i = 0, len = this.settings.columns.length,
+					  col; i < len; i++) {
+				col = this.settings.columns[i]
+				if (col.breakPoint < ww && (colSetting === null || col.breakPoint > colSetting.breakPoint)) {
+					colSetting = col;
+				}
+			}
 
-			return currentBreak.length ? currentBreak.pop().columns : 0;
+			return !!colSetting ? colSetting.columns : 0;
+		},
+
+		getSmallestCol: function () {
+			var index;
+
+			for (var i = 0, len = this.columns.length, mem; i < len; i++) {
+				if (!mem) {
+					mem = this.columns[i];
+					index = i;
+				} else {
+					if (mem.h > this.columns[i].h) {
+						index = i;
+						mem = this.columns[i];
+					}
+				}
+			}
+			return index;
 		},
 
 		resetItems: function () {
@@ -160,6 +185,14 @@
 			for (var i = 0, len = this.container.length; i < len; i++) {
 				this.container[i].removeAttribute('style');
 			}
+		},
+
+		getWindowWidth: function () {
+			return Math.max(
+				document.body.offsetWidth || 0,
+				document.documentElement.offsetWidth || 0,
+				window.innerWidth || 0
+			);
 		},
 
 		// PUBLIC FUNCTIONS
@@ -181,12 +214,17 @@
 			this.items = document.querySelectorAll(this.settings.itemSelector);
 
 			// Trigger a resize
-			this.windowResizeHandler.bind(this)
+			this.windowResizeHandler.apply(this);
 		}
 	};
 
 	// A simplified subset of Underscore.js functions
 	// https://github.com/jashkenas/underscore
+
+	// Get the current timestamp as integer
+	var now = Date.now || function() {
+		return new Date().getTime();
+	};
 
 	// Extends an object with another object
 	var extend = function(obj) {
@@ -243,5 +281,31 @@
 		};
 	};
 
+	// Some Utility functions
+
+	// Gets the value for a style property of an element
+	var getStyleVal = function (el, styleProp)
+	{	
+		var propVal;
+
+		if (el.currentStyle) {
+			propVal = el.currentStyle[styleProp];
+		}
+		else if (window.getComputedStyle) {
+			propVal = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
+		}
+		return propVal;
+	};
+
+	// Measures an elements outer height, including margin
+	var outerHeight = function (el) {
+		return Math.round(el.clientHeight + parseInt(getStyleVal(el, 'margin-top')) + parseInt(getStyleVal(el, 'margin-bottom')));
+	};
+
+	// Measures an elements outer width, including margin
+	var outerWidth = function (el) {
+		return Math.round(el.clientWidth + parseInt(getStyleVal(el, 'margin-left')) + parseInt(getStyleVal(el, 'margin-right')));	
+	};
+
 	window.Hoist = window.Hoist || Hoist;
-}(window));
+}(window, document));

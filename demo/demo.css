@@ -43,6 +43,12 @@ body {
 .col {
 	padding: 20px;
 }
+.col:nth-child(odd) {
+	background-color: #EAEAEA;
+}
+.col:nth-child(even) {
+	background-color: #CECECE;
+}
 p {
 	margin: 0;
 }
