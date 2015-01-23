@@ -42,6 +42,7 @@ body {
 }
 .col {
 	padding: 20px;
+	float: left;
 }
 .col:nth-child(odd) {
 	background-color: #EAEAEA;
@@ -77,5 +78,8 @@ p + p {
 @media screen and (min-width: 1200px) {
 	.col {
 		width: 25%;
+	}
+	.col:nth-child(4n) {
+		float: right;
 	}
 }
