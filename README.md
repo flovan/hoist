@@ -1,8 +1,9 @@
 ![Hoist](https://raw.github.com/flovan/hoist/master/demo/img/hoist.gif)
 
-#Hoist.js v0.1.0
+#Hoist.js v0.2.0
 
 A vanilla script to avoid gaps in fluid, breakpoint-aware columns.
+2KB minified and gzipped.
 
 ## Example
 
@@ -52,13 +53,21 @@ Resets known child elements, reparses and calculates the layout again. This is h
 
 Resets known children and removes the resize listener. Basically this acts as a killswitch for a Hoist instance.
 
+## Browser support
+
+IE 8+, Chrome 39+, Safari 8+, Opera 26+, FF 35+ 
+
+> **Note:** Modern browser support will probably be better than listed above. If you tested an earlier version, feel free to send a PR with updated versions.
+
 ## TODO
 
-* Test browser support
-* Decide on API options (pauze, start, destroy rather than remove, ...)
+* "stop", "pauze" and "start" instead of "remove"
+* Option to specify gutters (% or px)
 
 ## Changelog
 
+* **0.2.0**
+  * IE8+ support
 * **0.1.0**
   * Cleaned up, no more dependencies, working in latest Chrome
 * **0.0.1**  

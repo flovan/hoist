@@ -1,9 +1,46 @@
-//  Hoist.js 0.1.0
+//  Hoist.js 0.2.0
 //  https://github.com/flovan/hoist
 //  (c) 2015-whateverthecurrentyearis Florian Vanthuyne
 //  Hoist may be freely distributed under the MIT license.
 
 (function(window, document){
+
+	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// IE8(-) polyfills                                                      //
+	//                                                                       //
+	///////////////////////////////////////////////////////////////////////////
+
+	// Add a `hasOwnProperty()` method on window if there is none
+	window.hasOwnProperty = window.hasOwnProperty || Object.prototype.hasOwnProperty;
+
+	// Add `.bind()` to functions if there is none
+	// https://github.com/enyo/functionbind
+	if (!Function.prototype.bind) {
+		Function.prototype.bind = function (oThis) {
+			if (typeof this !== "function") {
+				throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+			}
+	 
+			var aArgs = Array.prototype.slice.call(arguments, 1),
+				fToBind = this, 
+				fNOP = function () {},
+				fBound = function () {
+					return fToBind.apply((this instanceof fNOP && oThis ? this : oThis), aArgs.concat(Array.prototype.slice.call(arguments)));
+				};
+	 
+			fNOP.prototype = this.prototype;
+			fBound.prototype = new fNOP();
+	 
+			return fBound;
+		};
+	}
+
+	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// Constructor                                                           //
+	//                                                                       //
+	///////////////////////////////////////////////////////////////////////////
 
 	var Hoist = function (container, opts) {
 		if (typeof container !== 'string') {
@@ -24,8 +61,16 @@
 		this.init();
 	}
 
+	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// Prototype                                                             //
+	//                                                                       //
+	///////////////////////////////////////////////////////////////////////////
+
 	Hoist.prototype = {
+
 		// PRIVATE VARS
+
 		win: null,
 		containerSelector: '#container',
 		container: null,
@@ -42,6 +87,7 @@
 
 		// PRIVATE FUNCTIONS
 
+		// Initializes the class instance
 		init: function () {
 			var self = this,
 				t;
@@ -50,6 +96,7 @@
 			this.container = document.querySelectorAll(this.containerSelector)[0];
 			this.items = document.querySelectorAll(this.settings.itemSelector);
 
+			// Throw a warning if the plugin won't actually be doing anything
 			if (!this.items.length) {
 				console.warn('Hoist error: selector `' + this.settings.itemSelector + '` did not match any elements.');
 			}
@@ -75,6 +122,7 @@
 			this.active = true;
 		},
 
+		// A handler for window resizes
 		windowResizeHandler: function (e) {
 			var ww = this.getWindowWidth(),
 				max = this.items.length,
@@ -85,6 +133,7 @@
 				smallestColIndex = 0,
 				leftOffset = 0;
 
+			// TODO: move this to a separate 'start' function
 			this.container.style.position = 'relative';
 
 			// Attach a guard for smaller screens
@@ -146,6 +195,7 @@
 			this.container.style.height = this.columns.pop().h + 'px';
 		},
 
+		// Gets the number of columns based on the current breakpoint
 		getNumCols: function () {
 			var colSetting = null,
 				ww = this.getWindowWidth();
@@ -160,11 +210,13 @@
 			return !!colSetting ? colSetting.columns : 0;
 		},
 
+		// Finds the smallest column
+		// TODO: Make sure only the smallest to the right is picked
 		getSmallestCol: function () {
 			var index;
 
-			for (var i = 0, len = this.columns.length, mem; i < len; i++) {
-				if (!mem) {
+			for (var i = 0, len = this.columns.length, mem = null; i < len; i++) {
+				if (mem === null) {
 					mem = this.columns[i];
 					index = i;
 				} else {
@@ -177,16 +229,16 @@
 			return index;
 		},
 
+		// Resets the styles that were given to the elements and container
 		resetItems: function () {
-			// Remove the style attribute for a clean reset
 			for (var i = 0, len = this.items.length; i < len; i++) {
 				this.items[i].removeAttribute('style');
 			}
-			for (var i = 0, len = this.container.length; i < len; i++) {
-				this.container[i].removeAttribute('style');
-			}
+
+			this.container.removeAttribute('style');
 		},
 
+		// Gets the width of the window
 		getWindowWidth: function () {
 			return Math.max(
 				document.body.offsetWidth || 0,
@@ -197,8 +249,9 @@
 
 		// PUBLIC FUNCTIONS
 
+		// Removes all functionality from a Hoist instance
+		// TODO: replace by "start", "stop" and "pause"
 		remove: function () {
-			// Reset items and remove resize listener
 			this.resetItems();
 			
 			try {
@@ -208,18 +261,20 @@
 			}
 		},
 
+		// Resets and parses items, triggers a resize
 		reset: function () {
-			// Reset and parse items again
 			this.resetItems();
 			this.items = document.querySelectorAll(this.settings.itemSelector);
-
-			// Trigger a resize
 			this.windowResizeHandler.apply(this);
 		}
 	};
 
-	// A simplified subset of Underscore.js functions
-	// https://github.com/jashkenas/underscore
+	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// A simplified subset of Underscore.js functions                        //
+	// https://github.com/jashkenas/underscore                               //
+	//                                                                       //
+	///////////////////////////////////////////////////////////////////////////
 
 	// Get the current timestamp as integer
 	var now = Date.now || function() {
@@ -281,7 +336,11 @@
 		};
 	};
 
-	// Some Utility functions
+	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// Some Utility functions                                                //
+	//                                                                       //
+	///////////////////////////////////////////////////////////////////////////
 
 	// Gets the value for a style property of an element
 	var getStyleVal = function (el, styleProp)
@@ -294,17 +353,35 @@
 		else if (window.getComputedStyle) {
 			propVal = document.defaultView.getComputedStyle(el,null).getPropertyValue(styleProp);
 		}
-		return propVal;
+		return propVal || 'auto';
 	};
 
 	// Measures an elements outer height, including margin
 	var outerHeight = function (el) {
-		return Math.round(el.clientHeight + parseInt(getStyleVal(el, 'margin-top')) + parseInt(getStyleVal(el, 'margin-bottom')));
+		var mt = getStyleVal(el, 'margin-top').split('px').shift(),
+			mb = getStyleVal(el, 'margin-bottom').split('px').shift();
+
+		mt = parseInt(mt === 'auto' ? 0 : mt);
+		mb = parseInt(mb === 'auto' ? 0 : mb);
+
+		return Math.round(el.clientHeight + mt + mb);
 	};
 
 	// Measures an elements outer width, including margin
 	var outerWidth = function (el) {
-		return Math.round(el.clientWidth + parseInt(getStyleVal(el, 'margin-left')) + parseInt(getStyleVal(el, 'margin-right')));	
+		var ml = getStyleVal(el, 'margin-left').split('px').shift(),
+			mr = getStyleVal(el, 'margin-rigth').split('px').shift();
+
+		ml = parseInt(ml === 'auto' ? 0 : ml);
+		mr = parseInt(mr === 'auto' ? 0 : mr);
+
+		return Math.round(el.clientWidth + ml + mr);	
+	};
+
+	// Gets and converts a specific margin value to an integer
+	var intMargin = function (side) {
+		/*var opposite = ,
+			sideA*/
 	};
 
 	window.Hoist = window.Hoist || Hoist;
