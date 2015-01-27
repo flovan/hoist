@@ -1,4 +1,4 @@
-//  Hoist.js 0.2.0
+//  Hoist.js 1.0.0
 //  https://github.com/flovan/hoist
 //  (c) 2015-whateverthecurrentyearis Florian Vanthuyne
 //  Hoist may be freely distributed under the MIT license.
@@ -7,7 +7,7 @@
 
 	///////////////////////////////////////////////////////////////////////////
 	//                                                                       //
-	// IE8(-) polyfills                                                      //
+	// IE8(-) POLYFILLS                                                      //
 	//                                                                       //
 	///////////////////////////////////////////////////////////////////////////
 
@@ -38,114 +38,113 @@
 
 	///////////////////////////////////////////////////////////////////////////
 	//                                                                       //
-	// Constructor                                                           //
+	// CONSTRUCTOR                                                           //
 	//                                                                       //
 	///////////////////////////////////////////////////////////////////////////
 
 	var Hoist = function (container, opts) {
+
+		// Shield for undefined container
 		if (typeof container !== 'string') {
 			console.error('Hoist constructor error: container selector needs to be a String.');
+			return;
 		}
-
-		this.containerSelector = container || this.containerSelector;
-
-		// Merge settings
-		opts = opts || {};
-		this.settings = extend({}, this.settings, opts);
-
-		// Expose API
-		this.remove = this.remove;
-		this.reset = this.reset;
-
-		// Initialize
-		this.init();
-	}
-
-	///////////////////////////////////////////////////////////////////////////
-	//                                                                       //
-	// Prototype                                                             //
-	//                                                                       //
-	///////////////////////////////////////////////////////////////////////////
-
-	Hoist.prototype = {
 
 		// PRIVATE VARS
 
-		win: null,
-		containerSelector: '#container',
-		container: null,
-		items: null,
-		columns: null,
-		active: false,
-		multipleBreaks: false,
-		settings: {
-			itemSelector: '.block',
-			columns: 2,
-			minWidth: 0,
-			repeatResize: 60
-		},
+		var
+			_win               = null,
+			_listenerCallback  =  null,
+			_containerSelector = '#container',
+			_container         = null,
+			_items             = null,
+			_columns           = null,
+			_multipleBreaks    = false,
+			_settings          = {
+				itemSelector:   '.block',
+				columns:        2,
+				minWidth:       0,
+				gutterWidth:    0,
+				repeatResize:   60
+			}
+		;
 
 		// PRIVATE FUNCTIONS
 
 		// Initializes the class instance
-		init: function () {
+		var _init = function () {
 			var self = this,
 				t;
 
 			// Identify DOM elements
-			this.container = document.querySelectorAll(this.containerSelector)[0];
-			this.items = document.querySelectorAll(this.settings.itemSelector);
+			_container = document.querySelectorAll(_containerSelector)[0];
+			_items = document.querySelectorAll(_settings.itemSelector);
 
 			// Throw a warning if the plugin won't actually be doing anything
-			if (!this.items.length) {
-				console.warn('Hoist error: selector `' + this.settings.itemSelector + '` did not match any elements.');
+			if (!_items.length) {
+				console.warn('Hoist error: selector `' + _settings.itemSelector + '` did not match any elements.');
 			}
 
 			// Find out if this setup needs multiple breaks
-			this.multipleBreaks = (this.settings.columns.constructor === Array);
+			_multipleBreaks = (_settings.columns.constructor === Array);
 
 			// Listen for and trigger resize
-			try {
-				window.addEventListener('resize', throttle(this.windowResizeHandler.bind(this), 50));
-			} catch (e) {
-				window.attachEvent('onresize', throttle(this.windowResizeHandler.bind(this), 50));
+			_addWindowListener();
+		};
+
+		// Adds a resize listener to the window
+		var _addWindowListener = function () {
+			if (_listenerCallback === null) {
+				_listenerCallback = throttle(_windowResizeHandler.bind(this), 50);
+
+				try {
+					window.addEventListener('resize', _listenerCallback);
+				} catch (e) {
+					window.attachEvent('onresize', _listenerCallback);
+				}
 			}
-			this.windowResizeHandler.apply(this);
 
-			// Trigger another offset resize for the webfonts
-			t = setTimeout(function () {
-				self.windowResizeHandler.apply(self);
-				clearTimeout(t);
-			}, self.settings.repeatResize);
+			_windowResizeHandler.apply(this);
+		};
 
-			// Set state to active
-			this.active = true;
-		},
+		// Removes the resize listener from the window
+		var _removeWindowListener = function () {
+			if (_listenerCallback !== null) {
+				try {
+					window.removeEventListener('resize', _listenerCallback);
+				} catch (e) {
+					window.detachEvent('onresize', _listenerCallback);
+				}
+				
+				_listenerCallback = null;
+			}
+		};
 
 		// A handler for window resizes
-		windowResizeHandler: function (e) {
-			var ww = this.getWindowWidth(),
-				max = this.items.length,
+		var _windowResizeHandler = function (e) {
+			var containerWidth = _container.clientWidth,
+				max = _items.length,
 				c = 0,
 				currItem = null,
-				numCols = this.multipleBreaks ? this.getNumCols() : this.settings.columns,
+				numCols = _multipleBreaks ? _getNumCols() : _settings.columns,
+				maxColWidth = Math.floor((containerWidth - (Math.max(0, (numCols-1))*_settings.gutterWidth)) / numCols),
 				currColIndex = 0,
 				smallestColIndex = 0,
 				leftOffset = 0;
 
 			// TODO: move this to a separate 'start' function
-			this.container.style.position = 'relative';
+			_container.style.position = 'relative';
 
 			// Attach a guard for smaller screens
-			if (ww < this.settings.minWidth) {
-				this.resetItems();
+			if (_getWindowWidth() < _settings.minWidth) {
+				_resetItems();
 				return;
 			}
 
 			// Prepare a height counter for each column
-			this.columns = [];
+			_columns = [];
 			while (numCols > 0) {
-				this.columns.push({w: 0, h: 0});
+				_columns.push({w: 0, h: 0});
 				numCols--;
 			}
 
@@ -157,8 +156,8 @@
 					var colWidths = [],
 						totalWidth = 0;
 
-					for (var i = 0, len = this.columns.length; i < len; i++) {
-						colWidths.push(this.columns[i].w);
+					for (var i = 0, len = _columns.length; i < len; i++) {
+						colWidths.push(_columns[i].w);
 					}
 					colWidths = colWidths.slice(0, currColIndex);
 
@@ -168,108 +167,140 @@
 				}
 
 				// Grab the next item
-				currItem = this.items[c];
+				currItem = _items[c];
 
 				// Set item styles
 				currItem.style.position = 'absolute';
-				currItem.style.left = leftOffset + 'px';
-				currItem.style.top = this.columns[currColIndex].h + 'px';
+				currItem.style.left = (currColIndex*_settings.gutterWidth + leftOffset) + 'px';
+				currItem.style.top = _columns[currColIndex].h + 'px';
+				currItem.style.width = maxColWidth + 'px';
 
 				// Increase column height counter
-				this.columns[currColIndex].h += outerHeight(currItem);
-				this.columns[currColIndex].w = outerWidth(currItem);
+				_columns[currColIndex].h += outerHeight(currItem);
+				_columns[currColIndex].w = outerWidth(currItem);
 
 				// Get the next column index
-				currColIndex = this.getSmallestCol();
+				currColIndex = _getSmallestCol();
 
 				// Increase loop counter
 				c++;
 			}
 
 			// Sort column heights
-			this.columns.sort(function (left, right) {
+			_columns.sort(function (left, right) {
 				return left.h > right.h ? 1 : -1;
 			});
 
 			// Make container fit the largest column
-			this.container.style.height = this.columns.pop().h + 'px';
-		},
+			_container.style.height = _columns.pop().h + 'px';
+		};
 
 		// Gets the number of columns based on the current breakpoint
-		getNumCols: function () {
+		var _getNumCols = function () {
 			var colSetting = null,
-				ww = this.getWindowWidth();
-			for ( var i = 0, len = this.settings.columns.length,
+				ww = _getWindowWidth();
+			for ( var i = 0, len = _settings.columns.length,
 					  col; i < len; i++) {
-				col = this.settings.columns[i]
+				col = _settings.columns[i]
 				if (col.breakPoint < ww && (colSetting === null || col.breakPoint > colSetting.breakPoint)) {
 					colSetting = col;
 				}
 			}
 
 			return !!colSetting ? colSetting.columns : 0;
-		},
+		};
 
 		// Finds the smallest column
 		// TODO: Make sure only the smallest to the right is picked
-		getSmallestCol: function () {
+		var _getSmallestCol = function () {
 			var index;
 
-			for (var i = 0, len = this.columns.length, mem = null; i < len; i++) {
+			for (var i = 0, len = _columns.length, mem = null; i < len; i++) {
 				if (mem === null) {
-					mem = this.columns[i];
+					mem = _columns[i];
 					index = i;
 				} else {
-					if (mem.h > this.columns[i].h) {
+					if (mem.h > _columns[i].h) {
 						index = i;
-						mem = this.columns[i];
+						mem = _columns[i];
 					}
 				}
 			}
 			return index;
-		},
+		};
 
 		// Resets the styles that were given to the elements and container
-		resetItems: function () {
-			for (var i = 0, len = this.items.length; i < len; i++) {
-				this.items[i].removeAttribute('style');
+		var _resetItems = function () {
+			for (var i = 0, len = _items.length, currItem; i < len; i++) {
+				currItem = _items[i];
+				_items[i].removeAttribute('style');
+				/*currItem.style.position = null;
+				currItem.style.left = null;
+				currItem.style.top = null;
+				currItem.style.width = null;*/
 			}
 
-			this.container.removeAttribute('style');
-		},
+			//_container.style.position = null;
+			_container.removeAttribute('style');
+		};
 
 		// Gets the width of the window
-		getWindowWidth: function () {
+		var _getWindowWidth = function () {
 			return Math.max(
 				document.body.offsetWidth || 0,
 				document.documentElement.offsetWidth || 0,
 				window.innerWidth || 0
 			);
-		},
+		};
 
 		// PUBLIC FUNCTIONS
 
-		// Removes all functionality from a Hoist instance
-		// TODO: replace by "start", "stop" and "pause"
-		remove: function () {
-			this.resetItems();
-			
-			try {
-				window.removeEventListener('resize', this.windowResizeHandler.bind(this));
-			} catch (e) {
-				window.detachEvent('onresize', this.windowResizeHandler.bind(this));
-			}
-		},
+		// Pauses the hoisting of elements
+		this.pause = function () {
+			_removeWindowListener();
+		};
+
+		// Resets and stops hoisting elements
+		this.stop = function () {
+			_resetItems();
+			_removeWindowListener();
+		};
+
+		// Starts hoisting elements
+		this.start = function () {
+			_resetItems();
+			_addWindowListener();
+		};
 
 		// Resets and parses items, triggers a resize
-		reset: function () {
-			this.resetItems();
-			this.items = document.querySelectorAll(this.settings.itemSelector);
-			this.windowResizeHandler.apply(this);
-		}
-	};
+		this.reset = function () {
+			_resetItems();
+			items = document.querySelectorAll(settings.itemSelector);
+			_windowResizeHandler.apply(this);
+		};
+
+		// Set the gutter width of a Hoist instance
+		this.setGutter = function (w) {
+			if (w === undefined || w !== parseInt(w, 10)) {
+				console.error('`setGutter()` requires an Integer value.');
+				return;
+			}
+
+			settings.gutterWidth = w;
+		};
+
+		// Merge settings
+		_containerSelector = container || _containerSelector;
+		opts = opts || {};
+		_settings = extend({}, _settings, opts);
+
+		// Initialize
+		_init();
+	}
 
 	///////////////////////////////////////////////////////////////////////////
+	//                                                                       //
+	// LIBS                                                                  //
 	//                                                                       //
 	// A simplified subset of Underscore.js functions                        //
 	// https://github.com/jashkenas/underscore                               //
@@ -338,13 +369,12 @@
 
 	///////////////////////////////////////////////////////////////////////////
 	//                                                                       //
-	// Some Utility functions                                                //
+	// UTILITIES                                                             //
 	//                                                                       //
 	///////////////////////////////////////////////////////////////////////////
 
 	// Gets the value for a style property of an element
-	var getStyleVal = function (el, styleProp)
-	{	
+	var getStyleVal = function (el, styleProp) {	
 		var propVal;
 
 		if (el.currentStyle) {

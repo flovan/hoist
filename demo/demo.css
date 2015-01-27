@@ -3,6 +3,7 @@ html {
 	-moz-box-sizing: border-box;
 	-ms-box-sizing: border-box;
 	box-sizing: border-box;
+	font-family: Helvetica Neue, Helvetica, Verdana, Roboto, sans-serif;
 }
 *,
 *:after,
@@ -12,22 +13,26 @@ html {
 body {
 	margin: 0;
 }
-/*.dynamic-scaler {
-	width: 100%;
-	margin: 0 auto;
-	-webkit-animation: flux-scale 5s ease-out infinite;
-	-moz-animation: flux-scale 5s ease-out infinite;
-	-ms-animation: flux-scale 5s ease-out infinite;
-	-o-animation: flux-scale 5s ease-out infinite;
-	animation: flux-scale 5s ease-out infinite;
-}*/
 .container {
 	width: 90%;
 	max-width: 960px;
 	margin: 20px auto;
 }
+h1,
+a {
+	color: #0B486B;
+}
+h1,
+.row ~ p {
+	text-align: center;
+}
+.status {
+	color: #3B8686;
+}
 .row {
 	*zoom: 1;
+	margin-bottom: 2em;
+	counter-reset: colNum;
 }
 .row:before,
 .row:after {
@@ -44,12 +49,33 @@ body {
 	width: 100%;
 	padding: 20px;
 	float: left;
+	counter-increment: colNum;
 }
-.col:nth-child(odd) {
-	background-color: #EAEAEA;
+.col:nth-child(n) {
+	background-color: #CFF09E;
 }
-.col:nth-child(even) {
-	background-color: #CECECE;
+.col:nth-child(2n) {
+	background-color: #A8DBA8;
+}
+.col:nth-child(3n) {
+	background-color: #79BD9A;
+	color: #FFF;
+}
+.col:nth-child(4n) {
+	background-color: #3B8686;
+	color: #FFF;
+}
+.col:nth-child(5n) {
+	background-color: #0B486B;
+	color: #FFF;
+}
+.col > *:first-child:before {
+	content: counter(colNum);
+	display: inline-block;
+	padding: 3px 5px;
+	margin-right: 5px;
+	background-color: #000;
+	color: #FFF;
 }
 p {
 	margin: 0;

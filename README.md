@@ -1,9 +1,11 @@
 ![Hoist](https://raw.github.com/flovan/hoist/master/demo/img/hoist.gif)
 
-#Hoist.js v0.2.0
+# Hoist.js v1.0.0
 
-A vanilla script to avoid gaps in fluid, breakpoint-aware columns.
+A zero-dependency script to avoid gaps in fluid, breakpoint-aware columns.  
 2KB minified and gzipped.
+
+[&rarr; Demo page &larr;](http://htmlpreview.github.io/?https://github.com/flovan/hoist/blob/master/demo/index.html) (best viewed in a resizable browser)
 
 ## Example
 
@@ -31,7 +33,7 @@ var h =  new Hoist('.row', {
 
 Create a new Hoist instance.  
 `[container]` is a String selector (so either a class, id, or any "query-able" dom element).  
-`[opts]` is an optional settings Object. These are the defaults:
+`[opts]` is an optional settings Object. These are the default values:
 ````javascript
 {
 	// Child selector
@@ -40,18 +42,32 @@ Create a new Hoist instance.
 	columns: 2,
 	// When to start hoisting elements
 	minWidth: 0,
+	// Width in between columns
+	gutterWidth: 0,
 	// Wait in miliseconds between resize events
 	repeatResize: 60
 }
 ````
 
+**`h.pause()`**
+
+Ignores window resizes and pauses the hoisting of elements.
+
+**`h.stop()`**
+
+Removes any elements positioning and stops listening for resizes. This is basicly a kill-switch for Hoist instances.
+
+**`h.start()`**
+
+Starts a paused or stopped Hoist instance.
+
 **`h.reset()`**
 
 Resets known child elements, reparses and calculates the layout again. This is handy when your layout will be fed with new items dynamically by eg. endless scrolling.
 
-**`h.remove()`**
+**`h.setGutter([integer])`**
 
-Resets known children and removes the resize listener. Basically this acts as a killswitch for a Hoist instance.
+Set the gutter width of a Hoist instance to the passed in width.
 
 ## Browser support
 
@@ -61,11 +77,14 @@ IE 8+, Chrome 39+, Safari 8+, Opera 26+, FF 35+
 
 ## TODO
 
-* "stop", "pauze" and "start" instead of "remove"
-* Option to specify gutters (% or px)
+* Allow % based gutters.
+* Switch to unsettings styles rather than removing style attribute
 
 ## Changelog
 
+* **1.0.0**
+  * API now exists of "start", "stop", "pause", "reset" and "setGutter"
+  * Code cleanup
 * **0.2.0**
   * IE8+ support
 * **0.1.0**
