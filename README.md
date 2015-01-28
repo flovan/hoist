@@ -1,6 +1,6 @@
 ![Hoist](https://raw.github.com/flovan/hoist/master/demo/img/hoist.gif)
 
-# Hoist.js v1.0.0
+# Hoist.js v1.0.1
 
 A zero-dependency script to avoid gaps in fluid, breakpoint-aware columns.  
 2KB minified and gzipped.
@@ -78,10 +78,11 @@ IE 8+, Chrome 39+, Safari 8+, Opera 26+, FF 35+
 ## TODO
 
 * Allow % based gutters.
-* Switch to unsettings styles rather than removing style attribute
 
 ## Changelog
 
+* **1.0.1**
+  * Less harsh style clearing below minimum breakpoint
 * **1.0.0**
   * API now exists of "start", "stop", "pause", "reset" and "setGutter"
   * Code cleanup
