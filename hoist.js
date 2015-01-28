@@ -1,4 +1,4 @@
-//  Hoist.js 1.0.0
+//  Hoist.js 1.0.1
 //  https://github.com/flovan/hoist
 //  (c) 2015-whateverthecurrentyearis Florian Vanthuyne
 //  Hoist may be freely distributed under the MIT license.
@@ -7,7 +7,7 @@
 
 	///////////////////////////////////////////////////////////////////////////
 	//                                                                       //
-	// IE8(-) POLYFILLS                                                      //
+	// IE POLYFILLS                                                          //
 	//                                                                       //
 	///////////////////////////////////////////////////////////////////////////
 
@@ -233,15 +233,14 @@
 		var _resetItems = function () {
 			for (var i = 0, len = _items.length, currItem; i < len; i++) {
 				currItem = _items[i];
-				_items[i].removeAttribute('style');
-				/*currItem.style.position = null;
-				currItem.style.left = null;
-				currItem.style.top = null;
-				currItem.style.width = null;*/
+				currItem.style.position = '';
+				currItem.style.left = '';
+				currItem.style.top = '';
+				currItem.style.width = '';
 			}
 
-			//_container.style.position = null;
-			_container.removeAttribute('style');
+			_container.style.position = '';
+			_container.style.height = '';
 		};
 
 		// Gets the width of the window
